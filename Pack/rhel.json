@@ -1,0 +1,99 @@
+{
+    "variables": {
+        "aws_ami_name": "EMANUE-AUTO-GOLD-{{isotime \"02-Jan-06-15-04\"}}"
+    },
+
+    "builders": [{
+        "type": "amazon-ebs",
+        "region": "us-east-1",
+        "instance_type": "t2.micro",
+        "ssh_username": "ec2-user",
+        "ssh_pty": "true",
+        "subnet_id": "subnet-8967fed3",
+        "security_group_id": "sg-1edaee6b",
+        "ami_name": "{{user `aws_ami_name`}}",
+        "ami_description": "Customized Amazon Linux",
+        "associate_public_ip_address": "true",
+        "ami_users":["380486833044","380486833044"],
+        "source_ami_filter": {
+            "filters": {
+                "virtualization-type": "hvm",
+                "name": "EMANUE-AUTO-GOLD*",
+                "root-device-type": "ebs"
+            },
+            "owners": ["380486833044", "380486833044"],
+            "most_recent": true
+        }
+    }],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "sudo yum clean all",
+                "echo Creating yumupdatelog.....",
+                "sudo touch /tmp/yumupdatelog.txt",
+                "sudo chmod 755 /tmp/yumupdatelog.txt",
+                "echo run update of all files.....",
+                "sudo yum update -y",
+                "echo install some basic packages.....",
+                "sudo yum install httpd -y",
+                "echo severspecs packages.....",
+                "sudo yum install ruby -y",
+                "gem install rake",
+                "gem install serverspec",
+                "echo Creating temporary dirs for serverspec...",
+                "sudo rm -rf spec",
+                "sudo mkdir spec",
+                "sudo chmod 757 spec",
+                "sudo mkdir spec/localhost",
+                "sudo chmod 757 spec/localhost",
+                "echo Temporary cp files to run test serverspecs"
+              ]
+             },
+            {
+                "type": "shell",
+                "inline": [
+                  "echo instance was rebooted....."
+              ],
+                "pause_before":"10s"
+            },
+      
+            { 
+                "type": "shell",
+                "inline": [
+                  "echo Now runing Serverspec....",
+                  "sudo systemctl start httpd",
+                  "sudo systemctl status httpd",
+                  "echo Serverspec Test ends here"
+              ]
+ 
+            },
+
+            {  
+                "type": "shell",
+                "inline": [
+                  "echo Performing Cleanup.....",
+                  "sudo yum remove ruby -y",
+                  "sudo systemctl stop httpd",
+                  "sudo yum remove httpd -y",
+                  "sudo rm -rf Rakefile",  
+                  "sudo rm -rf spec",  
+                  "sudo rm -rf /var/cache/yum",
+                  "sudo yum clean packages",
+                  "sudo rm -rf /tmp/sshd_config",
+                  "sudo rm -rf /tmp/ssh_config"
+              ]
+            },
+           
+            {
+                "type": "shell",
+                "inline": [
+                "echo sleeping 1 min for Nessus Scan...Please can I sleep more?.....",
+                "sleep 1m"
+            ]
+        }
+    ]
+}
+
+
