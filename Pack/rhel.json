@@ -35,6 +35,7 @@
                 "sudo touch /tmp/yumupdatelog.txt",
                 "sudo chmod 755 /tmp/yumupdatelog.txt",
                 "echo run update of all files.....",
+                "sudo yum repolist",
                 "sudo yum clean all",
                 "sudo yum update -y",
                 "echo install some basic packages.....",
